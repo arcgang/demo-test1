@@ -435,6 +435,56 @@ describe("HealthService.isHealthy", () => {
   });
 });
 
+// ── CatalogDependencyChecker – degraded path ─────────────────────────────────
+
+describe("CatalogDependencyChecker – degraded path", () => {
+  it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
+    const checker = new CatalogDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("degraded");
+  });
+
+  it("reports status: 'up' when latency is below warnThresholdMs", async () => {
+    const checker = new CatalogDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 10000,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("up");
+  });
+
+  it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
+    const checker = new CatalogDependencyChecker({
+      probe: failingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("down");
+  });
+});
+
+// ── Timer cleanup – no dangling timer on successful probe ─────────────────────
+
+describe("runProbe – timer cleanup", () => {
+  it("does not leave a dangling timer: setTimeout/clearTimeout calls are balanced", async () => {
+    const setTimeoutSpy = jest.spyOn(global, "setTimeout");
+    const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
+
+    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    await checker.check();
+
+    const setCount = setTimeoutSpy.mock.calls.length;
+    const clearCount = clearTimeoutSpy.mock.calls.length;
+    expect(clearCount).toBeGreaterThanOrEqual(setCount);
+
+    setTimeoutSpy.mockRestore();
+    clearTimeoutSpy.mockRestore();
+  });
+});
+
 // ── HealthService – checker isolation (state independence) ────────────────────
 
 describe("HealthService – each instantiation is independent", () => {

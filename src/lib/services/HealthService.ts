@@ -15,23 +15,31 @@ export interface DependencyChecker {
 export interface CheckerOptions {
   probe: () => Promise<void>;
   timeoutMs?: number;
+  warnThresholdMs?: number;
 }
 
 async function runProbe(
   name: string,
   probe: () => Promise<void>,
-  timeoutMs: number
+  timeoutMs: number,
+  warnThresholdMs?: number
 ): Promise<DependencyStatus> {
   const start = Date.now();
   const checkedAt = new Date().toISOString();
+  let timerId: ReturnType<typeof setTimeout> | undefined;
   try {
     await Promise.race([
       probe(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), timeoutMs)
-      ),
-    ]);
-    return { name, status: "up", latencyMs: Date.now() - start, checkedAt };
+      new Promise<never>((_, reject) => {
+        timerId = setTimeout(() => reject(new Error("timeout")), timeoutMs);
+      }),
+    ]).finally(() => clearTimeout(timerId));
+    const latencyMs = Date.now() - start;
+    const status: HealthStatus =
+      warnThresholdMs !== undefined && latencyMs >= warnThresholdMs
+        ? "degraded"
+        : "up";
+    return { name, status, latencyMs, checkedAt };
   } catch {
     return { name, status: "down", latencyMs: Date.now() - start, checkedAt };
   }
@@ -41,14 +49,16 @@ export class CatalogDependencyChecker implements DependencyChecker {
   readonly name = "catalog";
   private readonly probe: () => Promise<void>;
   private readonly timeoutMs: number;
+  private readonly warnThresholdMs?: number;
 
-  constructor({ probe, timeoutMs = 2000 }: CheckerOptions) {
+  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
     this.probe = probe;
     this.timeoutMs = timeoutMs;
+    this.warnThresholdMs = warnThresholdMs;
   }
 
   check(): Promise<DependencyStatus> {
-    return runProbe(this.name, this.probe, this.timeoutMs);
+    return runProbe(this.name, this.probe, this.timeoutMs, this.warnThresholdMs);
   }
 }
 
@@ -56,14 +66,16 @@ export class PaymentDependencyChecker implements DependencyChecker {
   readonly name = "payment";
   private readonly probe: () => Promise<void>;
   private readonly timeoutMs: number;
+  private readonly warnThresholdMs?: number;
 
-  constructor({ probe, timeoutMs = 2000 }: CheckerOptions) {
+  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
     this.probe = probe;
     this.timeoutMs = timeoutMs;
+    this.warnThresholdMs = warnThresholdMs;
   }
 
   check(): Promise<DependencyStatus> {
-    return runProbe(this.name, this.probe, this.timeoutMs);
+    return runProbe(this.name, this.probe, this.timeoutMs, this.warnThresholdMs);
   }
 }
 
@@ -71,14 +83,16 @@ export class EligibilityDependencyChecker implements DependencyChecker {
   readonly name = "eligibility";
   private readonly probe: () => Promise<void>;
   private readonly timeoutMs: number;
+  private readonly warnThresholdMs?: number;
 
-  constructor({ probe, timeoutMs = 2000 }: CheckerOptions) {
+  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
     this.probe = probe;
     this.timeoutMs = timeoutMs;
+    this.warnThresholdMs = warnThresholdMs;
   }
 
   check(): Promise<DependencyStatus> {
-    return runProbe(this.name, this.probe, this.timeoutMs);
+    return runProbe(this.name, this.probe, this.timeoutMs, this.warnThresholdMs);
   }
 }
 
@@ -86,14 +100,16 @@ export class ActivationDependencyChecker implements DependencyChecker {
   readonly name = "activation";
   private readonly probe: () => Promise<void>;
   private readonly timeoutMs: number;
+  private readonly warnThresholdMs?: number;
 
-  constructor({ probe, timeoutMs = 2000 }: CheckerOptions) {
+  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
     this.probe = probe;
     this.timeoutMs = timeoutMs;
+    this.warnThresholdMs = warnThresholdMs;
   }
 
   check(): Promise<DependencyStatus> {
-    return runProbe(this.name, this.probe, this.timeoutMs);
+    return runProbe(this.name, this.probe, this.timeoutMs, this.warnThresholdMs);
   }
 }
 
