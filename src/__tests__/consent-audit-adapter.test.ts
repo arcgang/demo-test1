@@ -414,4 +414,46 @@ describe("MockConsentAuditAdapter – instance isolation", () => {
     const trail = await adapter2.queryAuditTrail({ orderId: "ord_A" });
     expect(trail.length).toBe(0);
   });
+
+  it("consentCounter restarts from 1 on each new instance", async () => {
+    const adapter1 = new MockConsentAuditAdapter();
+    const adapter2 = new MockConsentAuditAdapter();
+    const r1 = await adapter1.recordConsentEvent({
+      sessionId: "sess_A",
+      purposeCode: "MARKETING",
+      granted: false,
+      sourceChannel: "WEB",
+    });
+    const r2 = await adapter2.recordConsentEvent({
+      sessionId: "sess_B",
+      purposeCode: "MARKETING",
+      granted: true,
+      sourceChannel: "WEB",
+    });
+    expect(r1.consentRecordId).toBe("cr_0001");
+    expect(r2.consentRecordId).toBe("cr_0001");
+  });
+
+  it("auditCounter restarts from 1 on each new instance", async () => {
+    const adapter1 = new MockConsentAuditAdapter();
+    const adapter2 = new MockConsentAuditAdapter();
+    const e1 = await adapter1.recordAuditEvent({
+      sessionId: "sess_A",
+      eventType: "ORDER_CREATED",
+      eventCategory: "ORDER",
+      actorType: "CUSTOMER",
+      actorId: "cust_A",
+      payloadJson: {},
+    });
+    const e2 = await adapter2.recordAuditEvent({
+      sessionId: "sess_B",
+      eventType: "ORDER_CREATED",
+      eventCategory: "ORDER",
+      actorType: "CUSTOMER",
+      actorId: "cust_B",
+      payloadJson: {},
+    });
+    expect(e1.auditEventId).toBe("ae_0001");
+    expect(e2.auditEventId).toBe("ae_0001");
+  });
 });

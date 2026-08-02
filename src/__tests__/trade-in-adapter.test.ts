@@ -313,4 +313,54 @@ describe("ValuationEstimateResult shape (LLD §5.9)", () => {
     expect(result).toHaveProperty("expiresAt");
     expect(result).toHaveProperty("disclaimer");
   });
+
+  it("expiresAt is never in the past", async () => {
+    const adapter = new MockTradeInAdapter();
+    const result = await adapter.getValuationEstimate({
+      customerId: "cust_1001",
+      marketCode: "ZA",
+      device: GOOD_IPHONE_12,
+    });
+    expect(new Date(result.expiresAt).getTime()).toBeGreaterThan(Date.now());
+  });
+});
+
+// ── Instance isolation ────────────────────────────────────────────────────────
+
+describe("MockTradeInAdapter – instance isolation", () => {
+  it("quoteCounter restarts from initial value (tiq_781) on each new instance", async () => {
+    const adapter1 = new MockTradeInAdapter();
+    const adapter2 = new MockTradeInAdapter();
+    const r1 = await adapter1.getValuationEstimate({
+      customerId: "cust_1001",
+      marketCode: "ZA",
+      device: GOOD_IPHONE_12,
+    });
+    const r2 = await adapter2.getValuationEstimate({
+      customerId: "cust_1001",
+      marketCode: "ZA",
+      device: GOOD_IPHONE_12,
+    });
+    expect(r1.tradeInQuoteId).toBe("tiq_781");
+    expect(r2.tradeInQuoteId).toBe("tiq_781");
+  });
+
+  it("requestCounter restarts from tir_001 on each new instance", async () => {
+    const adapter1 = new MockTradeInAdapter();
+    const adapter2 = new MockTradeInAdapter();
+    const r1 = await adapter1.submitTradeInRequest({
+      customerId: "cust_1001",
+      marketCode: "ZA",
+      tradeInQuoteId: "tiq_781",
+      device: GOOD_IPHONE_12,
+    });
+    const r2 = await adapter2.submitTradeInRequest({
+      customerId: "cust_1001",
+      marketCode: "ZA",
+      tradeInQuoteId: "tiq_781",
+      device: GOOD_IPHONE_12,
+    });
+    expect(r1.tradeInRequestId).toBe("tir_001");
+    expect(r2.tradeInRequestId).toBe("tir_001");
+  });
 });

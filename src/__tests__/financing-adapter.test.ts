@@ -239,3 +239,16 @@ describe("FinancingOptionsResult shape (LLD §5.8)", () => {
     expect(result).toHaveProperty("options");
   });
 });
+
+// ── Instance isolation ────────────────────────────────────────────────────────
+
+describe("MockFinancingAdapter – instance isolation", () => {
+  it("quoteCounter restarts from initial value (fin_451) on each new instance", async () => {
+    const adapter1 = new MockFinancingAdapter();
+    const adapter2 = new MockFinancingAdapter();
+    const r1 = await adapter1.getFinancingOptions(OPTIONS_INPUT);
+    const r2 = await adapter2.getFinancingOptions(OPTIONS_INPUT);
+    expect(r1.financeQuoteId).toBe("fin_451");
+    expect(r2.financeQuoteId).toBe("fin_451");
+  });
+});

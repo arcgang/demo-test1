@@ -7,9 +7,6 @@ import type {
   AuditTrailQuery,
 } from "@/lib/adapters/ConsentAuditAdapter";
 
-let consentCounter = 0;
-let auditCounter = 0;
-
 /**
  * MockConsentAuditAdapter — in-memory consent and audit adapter for demo and testing.
  *
@@ -21,11 +18,13 @@ let auditCounter = 0;
 export class MockConsentAuditAdapter implements ConsentAuditAdapter {
   private readonly auditEvents: AuditEvent[] = [];
   private readonly consentRecords: ConsentRecord[] = [];
+  private consentCounter = 0;
+  private auditCounter = 0;
 
   async recordConsentEvent(input: RecordConsentEventInput): Promise<ConsentRecord> {
-    consentCounter += 1;
+    this.consentCounter += 1;
     const record: ConsentRecord = {
-      consentRecordId: `cr_${String(consentCounter).padStart(4, "0")}`,
+      consentRecordId: `cr_${String(this.consentCounter).padStart(4, "0")}`,
       sessionId: input.sessionId,
       customerId: input.customerId ?? null,
       purposeCode: input.purposeCode,
@@ -38,9 +37,9 @@ export class MockConsentAuditAdapter implements ConsentAuditAdapter {
   }
 
   async recordAuditEvent(input: RecordAuditEventInput): Promise<AuditEvent> {
-    auditCounter += 1;
+    this.auditCounter += 1;
     const event: AuditEvent = {
-      auditEventId: `ae_${String(auditCounter).padStart(4, "0")}`,
+      auditEventId: `ae_${String(this.auditCounter).padStart(4, "0")}`,
       sessionId: input.sessionId,
       orderId: input.orderId,
       eventType: input.eventType,

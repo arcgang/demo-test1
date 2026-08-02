@@ -41,8 +41,6 @@ function calcMonthly(devicePrice: number, downPayment: number, tenureMonths: num
   return Math.round(payment * 100) / 100;
 }
 
-let quoteCounter = 450;
-
 /**
  * MockFinancingAdapter — seeded financing adapter for demo and testing.
  *
@@ -52,6 +50,7 @@ let quoteCounter = 450;
  */
 export class MockFinancingAdapter implements FinancingAdapter {
   private readonly scenario: ApplicationScenario;
+  private quoteCounter = 450;
 
   constructor(options: MockFinancingAdapterOptions = {}) {
     this.scenario = options.scenario ?? "approved";
@@ -68,9 +67,9 @@ export class MockFinancingAdapter implements FinancingAdapter {
       requiresFinalApproval: true,
     }));
 
-    quoteCounter += 1;
+    this.quoteCounter += 1;
     return {
-      financeQuoteId: `fin_${quoteCounter}`,
+      financeQuoteId: `fin_${this.quoteCounter}`,
       status: "QUOTED",
       options,
     };

@@ -62,11 +62,8 @@ function estimate(device: TradeInDevice): number {
   return Math.round((base * condFactor * screenFactor + storageBonus) * 100) / 100;
 }
 
-let quoteCounter = 780;
-let requestCounter = 0;
-
-/** Quote expiry — 72 hours from a fixed reference epoch. */
-const EXPIRES_AT = "2026-07-31T23:59:59Z";
+/** Quote expiry — 72 hours offset from a far-future anchor so quotes never appear expired in demo. */
+const QUOTE_EXPIRY_ANCHOR = "2099-12-31T23:59:59Z";
 
 /**
  * MockTradeInAdapter — deterministic trade-in valuation adapter for demo and testing.
@@ -75,23 +72,26 @@ const EXPIRES_AT = "2026-07-31T23:59:59Z";
  * The same inputs always produce the same credit estimate (LLD §5.9, IR-04).
  */
 export class MockTradeInAdapter implements TradeInAdapter {
+  private quoteCounter = 780;
+  private requestCounter = 0;
+
   async getValuationEstimate(input: ValuationEstimateInput): Promise<ValuationEstimateResult> {
-    quoteCounter += 1;
+    this.quoteCounter += 1;
     const currency = CURRENCY_BY_MARKET[input.marketCode] ?? "ZAR";
     return {
-      tradeInQuoteId: `tiq_${quoteCounter}`,
+      tradeInQuoteId: `tiq_${this.quoteCounter}`,
       status: "QUOTED",
       estimatedCredit: estimate(input.device),
       currency,
-      expiresAt: EXPIRES_AT,
+      expiresAt: QUOTE_EXPIRY_ANCHOR,
       disclaimer: "Final inspection may adjust credit.",
     };
   }
 
   async submitTradeInRequest(input: TradeInRequestInput): Promise<TradeInRequestResult> {
-    requestCounter += 1;
+    this.requestCounter += 1;
     return {
-      tradeInRequestId: `tir_${String(requestCounter).padStart(3, "0")}`,
+      tradeInRequestId: `tir_${String(this.requestCounter).padStart(3, "0")}`,
       tradeInQuoteId: input.tradeInQuoteId,
       requestStatus: "SUBMITTED",
     };
