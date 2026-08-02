@@ -16,13 +16,16 @@
 
 import {
   HealthService,
-  CatalogDependencyChecker,
-  PaymentDependencyChecker,
-  EligibilityDependencyChecker,
-  ActivationDependencyChecker,
+  GenericDependencyChecker,
+  type CheckerOptions,
   type DependencyStatus,
   type DependencyChecker,
 } from "@/lib/services/HealthService";
+
+const CatalogDependencyChecker = (opts: CheckerOptions) => new GenericDependencyChecker("catalog", opts);
+const PaymentDependencyChecker = (opts: CheckerOptions) => new GenericDependencyChecker("payment", opts);
+const EligibilityDependencyChecker = (opts: CheckerOptions) => new GenericDependencyChecker("eligibility", opts);
+const ActivationDependencyChecker = (opts: CheckerOptions) => new GenericDependencyChecker("activation", opts);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -44,20 +47,20 @@ function isIsoTimestamp(s: string): boolean {
 
 describe("DependencyStatus – required field shapes", () => {
   it("name is a non-empty string", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(typeof result.name).toBe("string");
     expect(result.name.length).toBeGreaterThan(0);
   });
 
   it("status is one of up | degraded | down", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(["up", "degraded", "down"]).toContain(result.status);
   });
 
   it("latencyMs is a non-negative finite number", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(typeof result.latencyMs).toBe("number");
     expect(result.latencyMs).toBeGreaterThanOrEqual(0);
@@ -65,7 +68,7 @@ describe("DependencyStatus – required field shapes", () => {
   });
 
   it("checkedAt is an ISO 8601 timestamp string", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(typeof result.checkedAt).toBe("string");
     expect(isIsoTimestamp(result.checkedAt)).toBe(true);
@@ -76,26 +79,26 @@ describe("DependencyStatus – required field shapes", () => {
 
 describe("CatalogDependencyChecker – up path", () => {
   it("reports name: 'catalog'", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.name).toBe("catalog");
   });
 
   it("reports status: 'up' when probe resolves", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.status).toBe("up");
   });
 
   it("records a non-negative latencyMs", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.latencyMs).toBeGreaterThanOrEqual(0);
   });
 
   it("sets checkedAt to a recent ISO timestamp", async () => {
     const before = Date.now();
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     const after = Date.now();
     const ts = Date.parse(result.checkedAt);
@@ -106,32 +109,32 @@ describe("CatalogDependencyChecker – up path", () => {
 
 describe("CatalogDependencyChecker – down path", () => {
   it("reports status: 'down' when probe rejects", async () => {
-    const checker = new CatalogDependencyChecker({ probe: failingProbe });
+    const checker = CatalogDependencyChecker({ probe: failingProbe });
     const result = await checker.check();
     expect(result.status).toBe("down");
   });
 
   it("still sets name: 'catalog' when down", async () => {
-    const checker = new CatalogDependencyChecker({ probe: failingProbe });
+    const checker = CatalogDependencyChecker({ probe: failingProbe });
     const result = await checker.check();
     expect(result.name).toBe("catalog");
   });
 
   it("still sets checkedAt when down", async () => {
-    const checker = new CatalogDependencyChecker({ probe: failingProbe });
+    const checker = CatalogDependencyChecker({ probe: failingProbe });
     const result = await checker.check();
     expect(isIsoTimestamp(result.checkedAt)).toBe(true);
   });
 
   it("never throws — check() always resolves", async () => {
-    const checker = new CatalogDependencyChecker({ probe: failingProbe });
+    const checker = CatalogDependencyChecker({ probe: failingProbe });
     await expect(checker.check()).resolves.toBeDefined();
   });
 });
 
 describe("CatalogDependencyChecker – timeout", () => {
   it("reports status: 'down' when probe exceeds the configured timeout", async () => {
-    const checker = new CatalogDependencyChecker({
+    const checker = CatalogDependencyChecker({
       probe: hangingProbe,
       timeoutMs: 50,
     });
@@ -140,7 +143,7 @@ describe("CatalogDependencyChecker – timeout", () => {
   }, 1000);
 
   it("default timeout is 2000 ms (passes fast probe within window)", async () => {
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.status).toBe("up");
   });
@@ -150,13 +153,13 @@ describe("CatalogDependencyChecker – timeout", () => {
 
 describe("PaymentDependencyChecker – up path", () => {
   it("reports name: 'payment'", async () => {
-    const checker = new PaymentDependencyChecker({ probe: succeedingProbe });
+    const checker = PaymentDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.name).toBe("payment");
   });
 
   it("reports status: 'up' when probe resolves", async () => {
-    const checker = new PaymentDependencyChecker({ probe: succeedingProbe });
+    const checker = PaymentDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.status).toBe("up");
   });
@@ -164,20 +167,20 @@ describe("PaymentDependencyChecker – up path", () => {
 
 describe("PaymentDependencyChecker – down path", () => {
   it("reports status: 'down' when probe rejects", async () => {
-    const checker = new PaymentDependencyChecker({ probe: failingProbe });
+    const checker = PaymentDependencyChecker({ probe: failingProbe });
     const result = await checker.check();
     expect(result.status).toBe("down");
   });
 
   it("never throws — check() always resolves", async () => {
-    const checker = new PaymentDependencyChecker({ probe: failingProbe });
+    const checker = PaymentDependencyChecker({ probe: failingProbe });
     await expect(checker.check()).resolves.toBeDefined();
   });
 });
 
 describe("PaymentDependencyChecker – timeout", () => {
   it("reports status: 'down' when probe exceeds the configured timeout", async () => {
-    const checker = new PaymentDependencyChecker({
+    const checker = PaymentDependencyChecker({
       probe: hangingProbe,
       timeoutMs: 50,
     });
@@ -190,13 +193,13 @@ describe("PaymentDependencyChecker – timeout", () => {
 
 describe("EligibilityDependencyChecker – up path", () => {
   it("reports name: 'eligibility'", async () => {
-    const checker = new EligibilityDependencyChecker({ probe: succeedingProbe });
+    const checker = EligibilityDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.name).toBe("eligibility");
   });
 
   it("reports status: 'up' when probe resolves", async () => {
-    const checker = new EligibilityDependencyChecker({ probe: succeedingProbe });
+    const checker = EligibilityDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.status).toBe("up");
   });
@@ -204,20 +207,20 @@ describe("EligibilityDependencyChecker – up path", () => {
 
 describe("EligibilityDependencyChecker – down path", () => {
   it("reports status: 'down' when probe rejects", async () => {
-    const checker = new EligibilityDependencyChecker({ probe: failingProbe });
+    const checker = EligibilityDependencyChecker({ probe: failingProbe });
     const result = await checker.check();
     expect(result.status).toBe("down");
   });
 
   it("never throws — check() always resolves", async () => {
-    const checker = new EligibilityDependencyChecker({ probe: failingProbe });
+    const checker = EligibilityDependencyChecker({ probe: failingProbe });
     await expect(checker.check()).resolves.toBeDefined();
   });
 });
 
 describe("EligibilityDependencyChecker – timeout", () => {
   it("reports status: 'down' when probe exceeds the configured timeout", async () => {
-    const checker = new EligibilityDependencyChecker({
+    const checker = EligibilityDependencyChecker({
       probe: hangingProbe,
       timeoutMs: 50,
     });
@@ -230,13 +233,13 @@ describe("EligibilityDependencyChecker – timeout", () => {
 
 describe("ActivationDependencyChecker – up path", () => {
   it("reports name: 'activation'", async () => {
-    const checker = new ActivationDependencyChecker({ probe: succeedingProbe });
+    const checker = ActivationDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.name).toBe("activation");
   });
 
   it("reports status: 'up' when probe resolves", async () => {
-    const checker = new ActivationDependencyChecker({ probe: succeedingProbe });
+    const checker = ActivationDependencyChecker({ probe: succeedingProbe });
     const result = await checker.check();
     expect(result.status).toBe("up");
   });
@@ -244,20 +247,20 @@ describe("ActivationDependencyChecker – up path", () => {
 
 describe("ActivationDependencyChecker – down path", () => {
   it("reports status: 'down' when probe rejects", async () => {
-    const checker = new ActivationDependencyChecker({ probe: failingProbe });
+    const checker = ActivationDependencyChecker({ probe: failingProbe });
     const result = await checker.check();
     expect(result.status).toBe("down");
   });
 
   it("never throws — check() always resolves", async () => {
-    const checker = new ActivationDependencyChecker({ probe: failingProbe });
+    const checker = ActivationDependencyChecker({ probe: failingProbe });
     await expect(checker.check()).resolves.toBeDefined();
   });
 });
 
 describe("ActivationDependencyChecker – timeout", () => {
   it("reports status: 'down' when probe exceeds the configured timeout", async () => {
-    const checker = new ActivationDependencyChecker({
+    const checker = ActivationDependencyChecker({
       probe: hangingProbe,
       timeoutMs: 50,
     });
@@ -459,7 +462,7 @@ describe("HealthService.isHealthy", () => {
 
 describe("CatalogDependencyChecker – degraded path", () => {
   it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
-    const checker = new CatalogDependencyChecker({
+    const checker = CatalogDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 0,
     });
@@ -468,7 +471,7 @@ describe("CatalogDependencyChecker – degraded path", () => {
   });
 
   it("reports status: 'up' when latency is below warnThresholdMs", async () => {
-    const checker = new CatalogDependencyChecker({
+    const checker = CatalogDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 10000,
     });
@@ -477,7 +480,7 @@ describe("CatalogDependencyChecker – degraded path", () => {
   });
 
   it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
-    const checker = new CatalogDependencyChecker({
+    const checker = CatalogDependencyChecker({
       probe: failingProbe,
       warnThresholdMs: 0,
     });
@@ -490,7 +493,7 @@ describe("CatalogDependencyChecker – degraded path", () => {
 
 describe("PaymentDependencyChecker – degraded path", () => {
   it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
-    const checker = new PaymentDependencyChecker({
+    const checker = PaymentDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 0,
     });
@@ -499,7 +502,7 @@ describe("PaymentDependencyChecker – degraded path", () => {
   });
 
   it("reports status: 'up' when latency is below warnThresholdMs", async () => {
-    const checker = new PaymentDependencyChecker({
+    const checker = PaymentDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 10000,
     });
@@ -508,7 +511,7 @@ describe("PaymentDependencyChecker – degraded path", () => {
   });
 
   it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
-    const checker = new PaymentDependencyChecker({
+    const checker = PaymentDependencyChecker({
       probe: failingProbe,
       warnThresholdMs: 0,
     });
@@ -521,7 +524,7 @@ describe("PaymentDependencyChecker – degraded path", () => {
 
 describe("EligibilityDependencyChecker – degraded path", () => {
   it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
-    const checker = new EligibilityDependencyChecker({
+    const checker = EligibilityDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 0,
     });
@@ -530,7 +533,7 @@ describe("EligibilityDependencyChecker – degraded path", () => {
   });
 
   it("reports status: 'up' when latency is below warnThresholdMs", async () => {
-    const checker = new EligibilityDependencyChecker({
+    const checker = EligibilityDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 10000,
     });
@@ -539,7 +542,7 @@ describe("EligibilityDependencyChecker – degraded path", () => {
   });
 
   it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
-    const checker = new EligibilityDependencyChecker({
+    const checker = EligibilityDependencyChecker({
       probe: failingProbe,
       warnThresholdMs: 0,
     });
@@ -552,7 +555,7 @@ describe("EligibilityDependencyChecker – degraded path", () => {
 
 describe("ActivationDependencyChecker – degraded path", () => {
   it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
-    const checker = new ActivationDependencyChecker({
+    const checker = ActivationDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 0,
     });
@@ -561,7 +564,7 @@ describe("ActivationDependencyChecker – degraded path", () => {
   });
 
   it("reports status: 'up' when latency is below warnThresholdMs", async () => {
-    const checker = new ActivationDependencyChecker({
+    const checker = ActivationDependencyChecker({
       probe: succeedingProbe,
       warnThresholdMs: 10000,
     });
@@ -570,7 +573,7 @@ describe("ActivationDependencyChecker – degraded path", () => {
   });
 
   it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
-    const checker = new ActivationDependencyChecker({
+    const checker = ActivationDependencyChecker({
       probe: failingProbe,
       warnThresholdMs: 0,
     });
@@ -586,7 +589,7 @@ describe("runProbe – timer cleanup", () => {
     const setTimeoutSpy = jest.spyOn(global, "setTimeout");
     const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
 
-    const checker = new CatalogDependencyChecker({ probe: succeedingProbe });
+    const checker = CatalogDependencyChecker({ probe: succeedingProbe });
     await checker.check();
 
     const setCount = setTimeoutSpy.mock.calls.length;

@@ -300,9 +300,9 @@ describe("GET /api/health/dependencies – 503 when a dependency is down", () =>
   });
 });
 
-// ── 207 when any dependency is degraded ──────────────────────────────────────
+// ── 503 when any dependency is degraded ──────────────────────────────────────
 
-describe("GET /api/health – 207 when a dependency is degraded", () => {
+describe("GET /api/health – 503 when a dependency is degraded", () => {
   function makeOverrideReq(
     path: string,
     overrides: Record<string, string>
@@ -312,10 +312,10 @@ describe("GET /api/health – 207 when a dependency is degraded", () => {
     });
   }
 
-  it("returns HTTP 207 when catalog is overridden to degraded", async () => {
+  it("returns HTTP 503 when catalog is overridden to degraded", async () => {
     const req = makeOverrideReq("/api/health", { catalog: "degraded" });
     const response = await getHealth(req);
-    expect(response.status).toBe(207);
+    expect(response.status).toBe(503);
   });
 
   it("aggregate body status is 'degraded' when one dep is degraded and rest are up", async () => {
@@ -344,7 +344,7 @@ describe("GET /api/health – 207 when a dependency is degraded", () => {
   });
 });
 
-describe("GET /api/health/dependencies – 207 when a dependency is degraded", () => {
+describe("GET /api/health/dependencies – 503 when a dependency is degraded", () => {
   function makeOverrideReq(
     path: string,
     overrides: Record<string, string>
@@ -354,15 +354,15 @@ describe("GET /api/health/dependencies – 207 when a dependency is degraded", (
     });
   }
 
-  it("returns HTTP 207 when catalog is overridden to degraded", async () => {
+  it("returns HTTP 503 when catalog is overridden to degraded", async () => {
     const req = makeOverrideReq("/api/health/dependencies", {
       catalog: "degraded",
     });
     const response = await getDependencies(req);
-    expect(response.status).toBe(207);
+    expect(response.status).toBe(503);
   });
 
-  it("still returns all entries in the array body on 207", async () => {
+  it("still returns all entries in the array body on 503 (degraded)", async () => {
     const req = makeOverrideReq("/api/health/dependencies", {
       payment: "degraded",
     });

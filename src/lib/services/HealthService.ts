@@ -66,30 +66,6 @@ export class GenericDependencyChecker implements DependencyChecker {
   }
 }
 
-export class CatalogDependencyChecker extends GenericDependencyChecker {
-  constructor(opts: CheckerOptions) {
-    super("catalog", opts);
-  }
-}
-
-export class PaymentDependencyChecker extends GenericDependencyChecker {
-  constructor(opts: CheckerOptions) {
-    super("payment", opts);
-  }
-}
-
-export class EligibilityDependencyChecker extends GenericDependencyChecker {
-  constructor(opts: CheckerOptions) {
-    super("eligibility", opts);
-  }
-}
-
-export class ActivationDependencyChecker extends GenericDependencyChecker {
-  constructor(opts: CheckerOptions) {
-    super("activation", opts);
-  }
-}
-
 export class HealthService {
   private readonly checkers: DependencyChecker[];
 

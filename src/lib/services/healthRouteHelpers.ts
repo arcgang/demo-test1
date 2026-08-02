@@ -1,10 +1,7 @@
 import type { NextRequest } from "next/server";
 import {
   HealthService,
-  CatalogDependencyChecker,
-  PaymentDependencyChecker,
-  EligibilityDependencyChecker,
-  ActivationDependencyChecker,
+  GenericDependencyChecker,
   type DependencyStatus,
   type HealthStatus,
 } from "@/lib/services/HealthService";
@@ -13,10 +10,10 @@ export const noop = (): Promise<void> => Promise.resolve();
 
 export function buildDefaultService(): HealthService {
   return new HealthService([
-    new CatalogDependencyChecker({ probe: noop }),
-    new PaymentDependencyChecker({ probe: noop }),
-    new EligibilityDependencyChecker({ probe: noop }),
-    new ActivationDependencyChecker({ probe: noop }),
+    new GenericDependencyChecker("catalog", { probe: noop }),
+    new GenericDependencyChecker("payment", { probe: noop }),
+    new GenericDependencyChecker("eligibility", { probe: noop }),
+    new GenericDependencyChecker("activation", { probe: noop }),
   ]);
 }
 
@@ -59,8 +56,7 @@ export async function runChecksWithOverrides(req: NextRequest): Promise<{
   }
 
   const aggregateStatus = worstStatus(results);
-  const httpStatus =
-    aggregateStatus === "up" ? 200 : aggregateStatus === "degraded" ? 207 : 503;
+  const httpStatus = aggregateStatus === "up" ? 200 : 503;
 
   return { results, aggregateStatus, httpStatus };
 }
