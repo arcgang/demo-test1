@@ -1,8 +1,8 @@
-// File: /private/var/folders/rt/g37ph_kn7l5b_grzklpzrk680000gn/T/sdlc/wt/t-L48ojw/repo/src/app/api/markets/[marketCode]/catalog/route.ts
-import * as entry from '../../../../../../../src/app/api/markets/[marketCode]/catalog/route.js'
+// File: /private/var/folders/rt/g37ph_kn7l5b_grzklpzrk680000gn/T/sdlc/wt/t-L48ojw/repo/src/app/api/health/dependencies/route.ts
+import * as entry from '../../../../../../src/app/api/health/dependencies/route.js'
 import type { NextRequest } from 'next/server.js'
 
-type TEntry = typeof import('../../../../../../../src/app/api/markets/[marketCode]/catalog/route.js')
+type TEntry = typeof import('../../../../../../src/app/api/health/dependencies/route.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

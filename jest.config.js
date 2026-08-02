@@ -14,6 +14,7 @@ const config = {
       testMatch: [
         "**/__tests__/market-catalog-route.test.ts",
         "**/__tests__/catalog-filter-pagination.test.ts",
+        "**/__tests__/health-route.test.ts",
       ],
       moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
@@ -33,6 +34,7 @@ const config = {
       testPathIgnorePatterns: [
         "market-catalog-route.test.ts",
         "catalog-filter-pagination.test.ts",
+        "health-route.test.ts",
       ],
       moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",

@@ -1,3 +1,5 @@
 {
+  "/api/health/route": "app/api/health/route.js",
+  "/api/health/dependencies/route": "app/api/health/dependencies/route.js",
   "/api/markets/[marketCode]/catalog/route": "app/api/markets/[marketCode]/catalog/route.js"
 }
