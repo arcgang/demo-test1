@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "market_config" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "market_code" VARCHAR(8) NOT NULL,
     "market_name" VARCHAR(100) NOT NULL,
     "locale_code" VARCHAR(16) NOT NULL,
@@ -10,17 +10,14 @@ CREATE TABLE "market_config" (
     "card_payment_enabled" BOOLEAN NOT NULL DEFAULT true,
     "lite_mode_default" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "market_config_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "market_config_market_code_key" ON "market_config"("market_code");
-
 -- CreateTable
 CREATE TABLE "product_cache" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "product_id" VARCHAR(64) NOT NULL,
     "market_code" VARCHAR(8) NOT NULL,
     "product_type" VARCHAR(32) NOT NULL,
@@ -28,19 +25,16 @@ CREATE TABLE "product_cache" (
     "price_once_off" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "price_recurring" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "availability_status" VARCHAR(32) NOT NULL,
-    "metadata_json" JSONB NOT NULL DEFAULT '{}',
+    "metadata_json" JSONB NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "product_cache_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "product_cache_product_id_key" ON "product_cache"("product_id");
-
 -- CreateTable
 CREATE TABLE "customer_session" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "customer_id" TEXT,
     "line_id" TEXT,
@@ -48,17 +42,14 @@ CREATE TABLE "customer_session" (
     "market_code" VARCHAR(8) NOT NULL,
     "expires_at" TIMESTAMPTZ NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "customer_session_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "customer_session_session_id_key" ON "customer_session"("session_id");
-
 -- CreateTable
 CREATE TABLE "cart" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "market_code" VARCHAR(8) NOT NULL,
     "status" VARCHAR(32) NOT NULL,
@@ -69,14 +60,14 @@ CREATE TABLE "cart" (
     "credit_amount" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "payable_now" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "cart_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "cart_item" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "cart_id" UUID NOT NULL,
     "line_type" VARCHAR(32) NOT NULL,
     "reference_id" VARCHAR(64),
@@ -85,23 +76,23 @@ CREATE TABLE "cart_item" (
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "once_off_amount" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "recurring_amount" DECIMAL(12,2) NOT NULL DEFAULT 0,
-    "metadata_json" JSONB NOT NULL DEFAULT '{}',
+    "metadata_json" JSONB NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "cart_item_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "eligibility_result" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "line_id" TEXT NOT NULL,
     "target_product_id" TEXT NOT NULL,
     "eligibility_status" VARCHAR(32) NOT NULL,
     "reason_code" VARCHAR(64),
-    "compatible_plans_json" JSONB NOT NULL DEFAULT '[]',
+    "compatible_plans_json" JSONB NOT NULL,
     "inventory_status" VARCHAR(32),
     "evaluated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -111,7 +102,7 @@ CREATE TABLE "eligibility_result" (
 
 -- CreateTable
 CREATE TABLE "finance_quote" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "product_id" TEXT NOT NULL,
@@ -126,7 +117,7 @@ CREATE TABLE "finance_quote" (
 
 -- CreateTable
 CREATE TABLE "trade_in_quote" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "market_code" VARCHAR(8) NOT NULL,
@@ -141,7 +132,7 @@ CREATE TABLE "trade_in_quote" (
 
 -- CreateTable
 CREATE TABLE "verification_case" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "market_code" VARCHAR(8) NOT NULL,
     "product_type" VARCHAR(32) NOT NULL,
@@ -151,14 +142,14 @@ CREATE TABLE "verification_case" (
     "activation_eligible" BOOLEAN NOT NULL DEFAULT false,
     "verification_reference" VARCHAR(128),
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "verification_case_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "payment_attempt" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "cart_id" UUID NOT NULL,
     "payment_method" VARCHAR(32) NOT NULL,
     "provider_name" VARCHAR(64) NOT NULL,
@@ -169,14 +160,14 @@ CREATE TABLE "payment_attempt" (
     "currency_code" VARCHAR(8) NOT NULL,
     "callback_payload_json" JSONB,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "payment_attempt_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "shop_order" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "cart_id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "customer_id" TEXT,
@@ -189,14 +180,14 @@ CREATE TABLE "shop_order" (
     "total_amount" DECIMAL(12,2) NOT NULL,
     "currency_code" VARCHAR(8) NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "shop_order_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "order_item" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "order_id" UUID NOT NULL,
     "line_type" VARCHAR(32) NOT NULL,
     "product_id" VARCHAR(64),
@@ -204,7 +195,7 @@ CREATE TABLE "order_item" (
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "once_off_amount" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "recurring_amount" DECIMAL(12,2) NOT NULL DEFAULT 0,
-    "metadata_json" JSONB NOT NULL DEFAULT '{}',
+    "metadata_json" JSONB NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "order_item_pkey" PRIMARY KEY ("id")
@@ -212,24 +203,21 @@ CREATE TABLE "order_item" (
 
 -- CreateTable
 CREATE TABLE "activation_status" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "order_id" UUID NOT NULL,
     "activation_state" VARCHAR(32) NOT NULL,
     "esim_reference" VARCHAR(128),
     "esim_qr_payload" TEXT,
-    "milestone_payload_json" JSONB NOT NULL DEFAULT '[]',
+    "milestone_payload_json" JSONB NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "activation_status_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "activation_status_order_id_key" ON "activation_status"("order_id");
-
 -- CreateTable
 CREATE TABLE "consent_record" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT NOT NULL,
     "customer_id" TEXT,
     "purpose_code" VARCHAR(32) NOT NULL,
@@ -243,20 +231,32 @@ CREATE TABLE "consent_record" (
 
 -- CreateTable
 CREATE TABLE "audit_event" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "id" UUID NOT NULL,
     "session_id" TEXT,
     "order_id" UUID,
     "event_type" VARCHAR(64) NOT NULL,
     "event_category" VARCHAR(64) NOT NULL,
     "actor_type" VARCHAR(32) NOT NULL,
     "actor_id" VARCHAR(64),
-    "payload_json" JSONB NOT NULL DEFAULT '{}',
+    "payload_json" JSONB NOT NULL,
     "occurred_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "audit_event_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "market_config_market_code_key" ON "market_config"("market_code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "product_cache_product_id_key" ON "product_cache"("product_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "customer_session_session_id_key" ON "customer_session"("session_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "activation_status_order_id_key" ON "activation_status"("order_id");
 
 -- AddForeignKey
 ALTER TABLE "product_cache" ADD CONSTRAINT "product_cache_market_code_fkey" FOREIGN KEY ("market_code") REFERENCES "market_config"("market_code") ON DELETE RESTRICT ON UPDATE CASCADE;
