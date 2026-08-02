@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MarketConfig {
+  id                 String   @id @default(uuid())
+  marketCode         String   @unique @map("market_code")
+  marketName         String   @map("market_name")
+  localeCode         String   @map("locale_code")
+  currencyCode       String   @map("currency_code")
+  taxLabel           String   @map("tax_label")
+  mobileMoneyEnabled Boolean  @default(false) @map("mobile_money_enabled")
+  cardPaymentEnabled Boolean  @default(true) @map("card_payment_enabled")
+  liteModeDefault    Boolean  @default(false) @map("lite_mode_default")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  productCaches     ProductCache[]
+  customerSessions  CustomerSession[]
+  carts             Cart[]
+  financeQuotes     FinanceQuote[]
+  tradeInQuotes     TradeInQuote[]
+  verificationCases VerificationCase[]
+  shopOrders        ShopOrder[]
+
+  @@map("market_config")
+}
+
+model ProductCache {
+  id                 String   @id @default(uuid())
+  productId          String   @unique @map("product_id")
+  marketCode         String   @map("market_code")
+  productType        String   @map("product_type")
+  name               String
+  priceOnceOff       Decimal  @default(0) @map("price_once_off") @db.Decimal(12, 2)
+  priceRecurring     Decimal  @default(0) @map("price_recurring") @db.Decimal(12, 2)
+  availabilityStatus String   @map("availability_status")
+  metadataJson       Json     @map("metadata_json") @db.JsonB
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  market MarketConfig @relation(fields: [marketCode], references: [marketCode])
+
+  @@map("product_cache")
+}
+
+model CustomerSession {
+  id              String   @id @default(uuid())
+  sessionId       String   @unique @map("session_id")
+  customerId      String?  @map("customer_id")
+  lineId          String?  @map("line_id")
+  isAuthenticated Boolean  @default(false) @map("is_authenticated")
+  marketCode      String   @map("market_code")
+  expiresAt       DateTime @map("expires_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  market             MarketConfig        @relation(fields: [marketCode], references: [marketCode])
+  carts              Cart[]
+  eligibilityResults EligibilityResult[]
+  financeQuotes      FinanceQuote[]
+  tradeInQuotes      TradeInQuote[]
+  verificationCases  VerificationCase[]
+  shopOrders         ShopOrder[]
+  consentRecords     ConsentRecord[]
+  auditEvents        AuditEvent[]
+
+  @@map("customer_session")
+}
+
+model Cart {
+  id                String   @id @default(uuid())
+  sessionId         String   @map("session_id")
+  marketCode        String   @map("market_code")
+  status            String
+  currencyCode      String   @map("currency_code")
+  onceOffSubtotal   Decimal  @default(0) @map("once_off_subtotal") @db.Decimal(12, 2)
+  recurringSubtotal Decimal  @default(0) @map("recurring_subtotal") @db.Decimal(12, 2)
+  taxAmount         Decimal  @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  creditAmount      Decimal  @default(0) @map("credit_amount") @db.Decimal(12, 2)
+  payableNow        Decimal  @default(0) @map("payable_now") @db.Decimal(12, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  session         CustomerSession  @relation(fields: [sessionId], references: [sessionId])
+  market          MarketConfig     @relation(fields: [marketCode], references: [marketCode])
+  cartItems       CartItem[]
+  paymentAttempts PaymentAttempt[]
+  shopOrders      ShopOrder[]
+
+  @@map("cart")
+}
+
+model CartItem {
+  id              String   @id @default(uuid())
+  cartId          String   @map("cart_id")
+  lineType        String   @map("line_type")
+  referenceId     String?  @map("reference_id")
+  productId       String?  @map("product_id")
+  displayName     String   @map("display_name")
+  quantity        Int      @default(1)
+  onceOffAmount   Decimal  @default(0) @map("once_off_amount") @db.Decimal(12, 2)
+  recurringAmount Decimal  @default(0) @map("recurring_amount") @db.Decimal(12, 2)
+  metadataJson    Json     @map("metadata_json") @db.JsonB
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@map("cart_item")
+}
+
+model EligibilityResult {
+  id                  String   @id @default(uuid())
+  sessionId           String   @map("session_id")
+  customerId          String   @map("customer_id")
+  lineId              String   @map("line_id")
+  targetProductId     String   @map("target_product_id")
+  eligibilityStatus   String   @map("eligibility_status")
+  reasonCode          String?  @map("reason_code")
+  compatiblePlansJson Json     @default("[]") @map("compatible_plans_json") @db.JsonB
+  inventoryStatus     String?  @map("inventory_status")
+  evaluatedAt         DateTime @default(now()) @map("evaluated_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  session CustomerSession @relation(fields: [sessionId], references: [sessionId])
+
+  @@map("eligibility_result")
+}
+
+model FinanceQuote {
+  id          String    @id @default(uuid())
+  sessionId   String    @map("session_id")
+  customerId  String    @map("customer_id")
+  productId   String    @map("product_id")
+  marketCode  String    @map("market_code")
+  quoteStatus String    @map("quote_status")
+  optionsJson Json      @map("options_json") @db.JsonB
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  session CustomerSession @relation(fields: [sessionId], references: [sessionId])
+  market  MarketConfig    @relation(fields: [marketCode], references: [marketCode])
+
+  @@map("finance_quote")
+}
+
+model TradeInQuote {
+  id                String    @id @default(uuid())
+  sessionId         String    @map("session_id")
+  customerId        String    @map("customer_id")
+  marketCode        String    @map("market_code")
+  devicePayloadJson Json      @map("device_payload_json") @db.JsonB
+  quoteStatus       String    @map("quote_status")
+  estimatedCredit   Decimal   @map("estimated_credit") @db.Decimal(12, 2)
+  expiresAt         DateTime? @map("expires_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  session CustomerSession @relation(fields: [sessionId], references: [sessionId])
+  market  MarketConfig    @relation(fields: [marketCode], references: [marketCode])
+
+  @@map("trade_in_quote")
+}
+
+model VerificationCase {
+  id                    String   @id @default(uuid())
+  sessionId             String   @map("session_id")
+  marketCode            String   @map("market_code")
+  productType           String   @map("product_type")
+  customerPayloadJson   Json     @map("customer_payload_json") @db.JsonB
+  portingPayloadJson    Json?    @map("porting_payload_json") @db.JsonB
+  verificationStatus    String   @map("verification_status")
+  activationEligible    Boolean  @default(false) @map("activation_eligible")
+  verificationReference String?  @map("verification_reference")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  session CustomerSession @relation(fields: [sessionId], references: [sessionId])
+  market  MarketConfig    @relation(fields: [marketCode], references: [marketCode])
+
+  @@map("verification_case")
+}
+
+model PaymentAttempt {
+  id                  String   @id @default(uuid())
+  cartId              String   @map("cart_id")
+  paymentMethod       String   @map("payment_method")
+  providerName        String   @map("provider_name")
+  providerReference   String?  @map("provider_reference")
+  tokenReference      String?  @map("token_reference")
+  paymentStatus       String   @map("payment_status")
+  amount              Decimal  @map("amount") @db.Decimal(12, 2)
+  currencyCode        String   @map("currency_code")
+  callbackPayloadJson Json?    @map("callback_payload_json") @db.JsonB
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  cart Cart @relation(fields: [cartId], references: [id])
+
+  @@map("payment_attempt")
+}
+
+model ShopOrder {
+  id                     String   @id @default(uuid())
+  cartId                 String   @map("cart_id")
+  sessionId              String   @map("session_id")
+  customerId             String?  @map("customer_id")
+  marketCode             String   @map("market_code")
+  externalOrderReference String?  @map("external_order_reference")
+  orderStatus            String   @map("order_status")
+  paymentStatus          String   @map("payment_status")
+  verificationStatus     String?  @map("verification_status")
+  activationStatus       String?  @map("activation_status")
+  totalAmount            Decimal  @map("total_amount") @db.Decimal(12, 2)
+  currencyCode           String   @map("currency_code")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  cart             Cart              @relation(fields: [cartId], references: [id])
+  session          CustomerSession   @relation(fields: [sessionId], references: [sessionId])
+  market           MarketConfig      @relation(fields: [marketCode], references: [marketCode])
+  orderItems       OrderItem[]
+  activationRecord ActivationStatus? @relation("OrderActivationStatus")
+  auditEvents      AuditEvent[]
+
+  @@map("shop_order")
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String   @map("order_id")
+  lineType        String   @map("line_type")
+  productId       String?  @map("product_id")
+  displayName     String   @map("display_name")
+  quantity        Int      @default(1)
+  onceOffAmount   Decimal  @default(0) @map("once_off_amount") @db.Decimal(12, 2)
+  recurringAmount Decimal  @default(0) @map("recurring_amount") @db.Decimal(12, 2)
+  metadataJson    Json     @map("metadata_json") @db.JsonB
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  order ShopOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_item")
+}
+
+model ActivationStatus {
+  id                   String   @id @default(uuid())
+  orderId              String   @unique @map("order_id")
+  activationState      String   @map("activation_state")
+  esimReference        String?  @map("esim_reference")
+  esimQrPayload        String?  @map("esim_qr_payload")
+  milestonePayloadJson Json     @default("[]") @map("milestone_payload_json") @db.JsonB
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  order ShopOrder @relation("OrderActivationStatus", fields: [orderId], references: [id])
+
+  @@map("activation_status")
+}
+
+model ConsentRecord {
+  id            String   @id @default(uuid())
+  sessionId     String   @map("session_id")
+  customerId    String?  @map("customer_id")
+  purposeCode   String   @map("purpose_code")
+  granted       Boolean
+  sourceChannel String   @default("WEB") @map("source_channel")
+  recordedAt    DateTime @default(now()) @map("recorded_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  session CustomerSession @relation(fields: [sessionId], references: [sessionId])
+
+  @@map("consent_record")
+}
+
+model AuditEvent {
+  id            String   @id @default(uuid())
+  sessionId     String?  @map("session_id")
+  orderId       String?  @map("order_id")
+  eventType     String   @map("event_type")
+  eventCategory String   @map("event_category")
+  actorType     String   @map("actor_type")
+  actorId       String?  @map("actor_id")
+  payloadJson   Json     @map("payload_json") @db.JsonB
+  occurredAt    DateTime @default(now()) @map("occurred_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  session CustomerSession? @relation(fields: [sessionId], references: [sessionId])
+  order   ShopOrder?       @relation(fields: [orderId], references: [id])
+
+  @@map("audit_event")
+}
