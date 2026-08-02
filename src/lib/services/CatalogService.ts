@@ -34,7 +34,7 @@ export interface CatalogItem {
   productId: string;
   productType: string;
   name: string;
-  price: { onceOff: number; currency: string };
+  price: { onceOff: number; recurring: number; currency: string };
   badges: string[];
   availabilityStatus: string;
   href: string;
@@ -64,7 +64,7 @@ export class CatalogService {
       productId: row.productId,
       productType: row.productType,
       name: row.name,
-      price: { onceOff: row.priceOnceOff, currency: row.currencyCode },
+      price: { onceOff: row.priceOnceOff, recurring: row.priceRecurring, currency: row.currencyCode },
       badges: row.badges,
       availabilityStatus: row.availabilityStatus,
       href: `/product/${row.productId}`,

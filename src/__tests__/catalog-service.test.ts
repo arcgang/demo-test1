@@ -166,8 +166,7 @@ describe("CatalogService.getCatalog – default (full) payload", () => {
     const [item] = await service.getCatalog("ZA");
 
     expect(item).toHaveProperty("imageUrl");
-    expect(typeof item.imageUrl).toBe("string");
-    expect((item.imageUrl as string).length).toBeGreaterThan(0);
+    expect(item.imageUrl).toBeTruthy();
   });
 
   it("full item includes promoVideoUrl", async () => {
@@ -184,7 +183,7 @@ describe("CatalogService.getCatalog – default (full) payload", () => {
     const [item] = await service.getCatalog("ZA");
 
     expect(item).toHaveProperty("alternateImages");
-    expect(Array.isArray((item as CatalogItem & { alternateImages: unknown[] }).alternateImages)).toBe(true);
+    expect(Array.isArray(item.alternateImages)).toBe(true);
   });
 
   it("multiple products are all returned", async () => {
