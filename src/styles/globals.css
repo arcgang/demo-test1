@@ -96,12 +96,13 @@ a:visited {
   text-decoration: none;
   border-radius: 0 0 4px 0;
   /* Keep it accessible to assistive technologies even when off-screen */
-  clip: rect(0 0 0 0);
+  clip: rect(0, 0, 0, 0);
   clip-path: inset(50%);
   white-space: nowrap;
   overflow: hidden;
   width: 1px;
   height: 1px;
+  margin: -1px;
 }
 
 .skip-nav:focus,
