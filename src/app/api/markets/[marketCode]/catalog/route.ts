@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MarketContextService } from "@/lib/services/MarketContextService";
 import { InMemoryMarketConfigRepository } from "@/lib/db/InMemoryMarketConfigRepository";
+import { CatalogService } from "@/lib/services/CatalogService";
+import { InMemoryCatalogRepository } from "@/lib/db/InMemoryCatalogRepository";
 
 const repo = new InMemoryMarketConfigRepository();
 const marketContextService = new MarketContextService(repo);
+
+const catalogRepo = new InMemoryCatalogRepository();
+const catalogService = new CatalogService(catalogRepo);
 
 // Makes response.json() re-callable by caching the single body-read promise.
 // Required because test assertions call .json() more than once on the same
@@ -20,7 +25,7 @@ function jsonResponse(data: unknown, init?: ResponseInit): NextResponse {
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { marketCode: string } }
 ): Promise<NextResponse> {
   const { marketCode } = params;
@@ -37,7 +42,13 @@ export async function GET(
     );
   }
 
-  const enabledPaymentMethods = await marketContextService.getEnabledPaymentMethods(marketCode);
+  const liteModeParam = req.nextUrl.searchParams.get("liteMode");
+  const liteMode = liteModeParam === "true";
+
+  const [enabledPaymentMethods, catalog] = await Promise.all([
+    marketContextService.getEnabledPaymentMethods(marketCode),
+    catalogService.getCatalog(marketCode, { liteMode }),
+  ]);
 
   return jsonResponse({
     market: {
@@ -47,6 +58,6 @@ export async function GET(
       taxLabel: config.taxLabel,
       enabledPaymentMethods,
     },
-    catalog: [],
+    catalog,
   });
 }
