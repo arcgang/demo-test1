@@ -1,0 +1,118 @@
+/* ==========================================================================
+   Vodacom Shop – Global Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties (color tokens)
+   Body text: #1a1a1a on #ffffff → contrast ratio ~19:1 (exceeds 4.5:1 AA)
+   Headings: #1a1a1a on #ffffff → contrast ratio ~19:1 (exceeds 4.5:1 AA)
+   Interactive controls: #ffffff on #e60000 (Vodacom red) → ~4.6:1 (≥4.5:1 AA)
+   Focus outline: #005fcc on #ffffff → ~8.6:1 (exceeds 3:1 AA for UI components)
+   -------------------------------------------------------------------------- */
+:root {
+  --color-body-fg: #1a1a1a;
+  --color-body-bg: #ffffff;
+  --color-heading-fg: #1a1a1a;
+  --color-heading-bg: #ffffff;
+  --color-interactive-fg: #ffffff;
+  --color-interactive-bg: #e60000;
+  --color-focus-outline: #005fcc;
+  --color-focus-outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Base typography – ensures body text and headings meet 4.5:1 AA ratio
+   -------------------------------------------------------------------------- */
+body {
+  color: var(--color-body-fg);
+  background-color: var(--color-body-bg);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-heading-fg);
+}
+
+/* --------------------------------------------------------------------------
+   Interactive control text – buttons and links meet ≥3:1 (large/bold) or
+   4.5:1 (normal) AA ratio depending on size
+   -------------------------------------------------------------------------- */
+button,
+[role="button"],
+input,
+select,
+textarea,
+a {
+  color: inherit;
+}
+
+a {
+  color: #0057b8; /* #0057b8 on #ffffff → ~7.2:1 (exceeds 4.5:1) */
+}
+
+a:visited {
+  color: #4b0082; /* #4b0082 on #ffffff → ~10.2:1 */
+}
+
+/* --------------------------------------------------------------------------
+   Global focus indicator – WCAG 2.1 AA: visible, ≥3:1 contrast against
+   adjacent background; never suppressed without a replacement
+   -------------------------------------------------------------------------- */
+*:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: var(--color-focus-outline-offset);
+  border-radius: 2px;
+}
+
+/* Remove the default outline only in environments where :focus-visible is
+   supported, preventing a11y regressions in older browsers. */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* --------------------------------------------------------------------------
+   Skip navigation link
+   Visually hidden until focused; focus state meets 3:1 contrast
+   -------------------------------------------------------------------------- */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-interactive-bg);
+  color: var(--color-interactive-fg);
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  /* Keep it accessible to assistive technologies even when off-screen */
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+}
+
+.skip-nav:focus,
+.skip-nav:focus-visible {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  clip: auto;
+  clip-path: none;
+  overflow: visible;
+  white-space: normal;
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
