@@ -8,10 +8,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <CartProvider>
-      <Header />
-      <main id="main-content">{children}</main>
-      <Footer />
-    </CartProvider>
+    <html lang="en">
+      <body>
+        <CartProvider>
+          <Header />
+          <main id="main-content">{children}</main>
+          <Footer />
+        </CartProvider>
+      </body>
+    </html>
   );
 }
