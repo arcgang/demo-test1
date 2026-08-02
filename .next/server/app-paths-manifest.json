@@ -1,0 +1,3 @@
+{
+  "/api/markets/[marketCode]/catalog/route": "app/api/markets/[marketCode]/catalog/route.js"
+}
