@@ -1,6 +1,9 @@
 /**
  * CatalogService — localized product catalog retrieval with optional lite-mode projection.
  *
+ * Fields intentionally omitted from CatalogItem (never present in the item DTO):
+ *   - marketCode        (always equal to the {marketCode} path parameter; redundant at item scope)
+ *
  * liteMode omits high-bandwidth media fields:
  *   - imageUrl          (high-resolution product image URL)
  *   - promoVideoUrl     (promotional video URL, may be null)
