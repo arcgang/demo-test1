@@ -228,22 +228,6 @@ CREATE TABLE "activation_status" (
 CREATE UNIQUE INDEX "activation_status_order_id_key" ON "activation_status"("order_id");
 
 -- CreateTable
--- Allowed consent purposes: MARKETING, PERSONALIZATION, TERMS
--- Allowed source channels: CHECKOUT, ONBOARDING, WEB
-CREATE TABLE "consent_record" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "session_id" TEXT NOT NULL,
-    "customer_id" TEXT,
-    "purpose_code" VARCHAR(32) NOT NULL,
-    "granted" BOOLEAN NOT NULL,
-    "source_channel" VARCHAR(32) NOT NULL DEFAULT 'WEB',
-    "recorded_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "consent_record_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "audit_event" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "session_id" TEXT,
@@ -313,9 +297,6 @@ ALTER TABLE "order_item" ADD CONSTRAINT "order_item_order_id_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "activation_status" ADD CONSTRAINT "activation_status_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "shop_order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "consent_record" ADD CONSTRAINT "consent_record_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "customer_session"("session_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "audit_event" ADD CONSTRAINT "audit_event_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "customer_session"("session_id") ON DELETE SET NULL ON UPDATE CASCADE;
