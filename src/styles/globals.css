@@ -46,7 +46,11 @@ h6 {
    4.5:1 (normal) AA ratio depending on size
    -------------------------------------------------------------------------- */
 button,
-[role="button"],
+[role="button"] {
+  background-color: var(--color-interactive-bg);
+  color: var(--color-interactive-fg);
+}
+
 input,
 select,
 textarea,
@@ -84,8 +88,6 @@ a:visited {
    -------------------------------------------------------------------------- */
 .skip-nav {
   position: absolute;
-  top: -100%;
-  left: 0;
   z-index: 9999;
   padding: 0.75rem 1.25rem;
   background: var(--color-interactive-bg);
