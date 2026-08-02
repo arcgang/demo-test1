@@ -11,7 +11,10 @@ const config = {
     {
       displayName: "api",
       testEnvironment: "node",
-      testMatch: ["**/__tests__/market-catalog-route.test.ts"],
+      testMatch: [
+        "**/__tests__/market-catalog-route.test.ts",
+        "**/__tests__/catalog-filter-pagination.test.ts",
+      ],
       moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
       },
@@ -27,7 +30,10 @@ const config = {
         "**/__tests__/**/*.[jt]s?(x)",
         "**/?(*.)+(spec|test).[jt]s?(x)",
       ],
-      testPathIgnorePatterns: ["market-catalog-route.test.ts"],
+      testPathIgnorePatterns: [
+        "market-catalog-route.test.ts",
+        "catalog-filter-pagination.test.ts",
+      ],
       moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
       },
