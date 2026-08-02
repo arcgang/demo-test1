@@ -1,0 +1,5 @@
+{
+  "/api/onboarding/validate-configuration/route": "app/api/onboarding/validate-configuration/route.js",
+  "/api/markets/[marketCode]/catalog/route": "app/api/markets/[marketCode]/catalog/route.js",
+  "/api/catalog/route": "app/api/catalog/route.js"
+}
