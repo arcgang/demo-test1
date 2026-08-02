@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer>
       <div>
-        <h4>About Vodacom</h4>
+        <h2>About Vodacom</h2>
         <ul>
           <li><Link href="/about">About Us</Link></li>
           <li><Link href="/careers">Careers</Link></li>
@@ -13,7 +13,7 @@ export function Footer() {
         </ul>
       </div>
       <div>
-        <h4>Support</h4>
+        <h2>Support</h2>
         <ul>
           <li><Link href="/support">Support Centre</Link></li>
           <li><Link href="/contact">Contact Us</Link></li>
@@ -22,7 +22,7 @@ export function Footer() {
         </ul>
       </div>
       <div>
-        <h4>Legal</h4>
+        <h2>Legal</h2>
         <ul>
           <li><Link href="/terms">Terms &amp; Conditions</Link></li>
           <li><Link href="/privacy">Privacy Policy</Link></li>
@@ -31,7 +31,7 @@ export function Footer() {
         </ul>
       </div>
       <div>
-        <h4>Follow Us</h4>
+        <h2>Follow Us</h2>
         <ul>
           <li><Link href="#">Facebook</Link></li>
           <li><Link href="#">Twitter</Link></li>
