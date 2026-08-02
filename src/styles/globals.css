@@ -53,9 +53,9 @@ button,
 
 input,
 select,
-textarea,
-a {
-  color: inherit;
+textarea {
+  color: var(--color-body-fg);       /* #1a1a1a on #ffffff → ~19:1 (exceeds 4.5:1 AA) */
+  background-color: var(--color-body-bg);
 }
 
 a {
