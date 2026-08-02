@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
+import { createContext, useContext, useState } from "react";
 
 interface CartContextValue {
   itemCount: number;
@@ -12,7 +13,7 @@ const CartContext = createContext<CartContextValue>({
   setItemCount: () => {},
 });
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({ children }: { children: ReactNode }) {
   const [itemCount, setItemCount] = useState(0);
   return (
     <CartContext.Provider value={{ itemCount, setItemCount }}>
