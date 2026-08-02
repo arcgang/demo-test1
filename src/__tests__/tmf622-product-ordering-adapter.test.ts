@@ -135,4 +135,15 @@ describe("MockTMF622ProductOrderingAdapter.updateOrderState", () => {
       adapter.updateOrderState("ext_order_fail_immutable", "COMPLETED")
     ).rejects.toBeDefined();
   });
+
+  it.each(["COMPLETED", "FAILED", "CANCELLED"] as const)(
+    "rejects a transition out of terminal state %s",
+    async (terminalState) => {
+      const adapter = new MockTMF622ProductOrderingAdapter();
+      await adapter.updateOrderState("ext_order_abc", terminalState);
+      await expect(
+        adapter.updateOrderState("ext_order_abc", "IN_PROGRESS")
+      ).rejects.toThrow(/terminal state/);
+    }
+  );
 });

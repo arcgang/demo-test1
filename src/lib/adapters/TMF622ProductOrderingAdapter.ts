@@ -79,6 +79,11 @@ export class MockTMF622ProductOrderingAdapter implements OrderingAdapter {
   }
 
   async updateOrderState(externalOrderReference: string, newState: OrderStatusResult["status"]): Promise<void> {
+    const TERMINAL: Array<OrderStatusResult["status"]> = ["COMPLETED", "FAILED", "CANCELLED"];
+    const storedState = this.overrides.get(externalOrderReference);
+    if (storedState !== undefined && TERMINAL.includes(storedState)) {
+      throw new Error(`Cannot update order already in terminal state ${storedState}: ${externalOrderReference}`);
+    }
     if (externalOrderReference.includes("fail")) {
       throw new Error(`Cannot update immutable failed order: ${externalOrderReference}`);
     }
