@@ -38,8 +38,9 @@ export interface CatalogItem {
   badges: string[];
   availabilityStatus: string;
   href: string;
-  imageUrl: string;
-  promoVideoUrl: string | null;
+  imageUrl?: string;
+  promoVideoUrl?: string | null;
+  alternateImages?: string[];
 }
 
 export interface CatalogOptions {
@@ -70,7 +71,7 @@ export class CatalogService {
     };
 
     if (liteMode) {
-      return base as CatalogItem;
+      return base;
     }
 
     return {
@@ -78,6 +79,6 @@ export class CatalogService {
       imageUrl: row.imageUrl,
       promoVideoUrl: row.promoVideoUrl,
       alternateImages: row.alternateImages,
-    } as CatalogItem & { alternateImages: string[] };
+    };
   }
 }
