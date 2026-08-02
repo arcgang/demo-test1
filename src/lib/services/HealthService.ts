@@ -45,13 +45,17 @@ async function runProbe(
   }
 }
 
-export class CatalogDependencyChecker implements DependencyChecker {
-  readonly name = "catalog";
+export class GenericDependencyChecker implements DependencyChecker {
+  readonly name: string;
   private readonly probe: () => Promise<void>;
   private readonly timeoutMs: number;
   private readonly warnThresholdMs?: number;
 
-  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
+  constructor(
+    name: string,
+    { probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions
+  ) {
+    this.name = name;
     this.probe = probe;
     this.timeoutMs = timeoutMs;
     this.warnThresholdMs = warnThresholdMs;
@@ -62,54 +66,27 @@ export class CatalogDependencyChecker implements DependencyChecker {
   }
 }
 
-export class PaymentDependencyChecker implements DependencyChecker {
-  readonly name = "payment";
-  private readonly probe: () => Promise<void>;
-  private readonly timeoutMs: number;
-  private readonly warnThresholdMs?: number;
-
-  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
-    this.probe = probe;
-    this.timeoutMs = timeoutMs;
-    this.warnThresholdMs = warnThresholdMs;
-  }
-
-  check(): Promise<DependencyStatus> {
-    return runProbe(this.name, this.probe, this.timeoutMs, this.warnThresholdMs);
+export class CatalogDependencyChecker extends GenericDependencyChecker {
+  constructor(opts: CheckerOptions) {
+    super("catalog", opts);
   }
 }
 
-export class EligibilityDependencyChecker implements DependencyChecker {
-  readonly name = "eligibility";
-  private readonly probe: () => Promise<void>;
-  private readonly timeoutMs: number;
-  private readonly warnThresholdMs?: number;
-
-  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
-    this.probe = probe;
-    this.timeoutMs = timeoutMs;
-    this.warnThresholdMs = warnThresholdMs;
-  }
-
-  check(): Promise<DependencyStatus> {
-    return runProbe(this.name, this.probe, this.timeoutMs, this.warnThresholdMs);
+export class PaymentDependencyChecker extends GenericDependencyChecker {
+  constructor(opts: CheckerOptions) {
+    super("payment", opts);
   }
 }
 
-export class ActivationDependencyChecker implements DependencyChecker {
-  readonly name = "activation";
-  private readonly probe: () => Promise<void>;
-  private readonly timeoutMs: number;
-  private readonly warnThresholdMs?: number;
-
-  constructor({ probe, timeoutMs = 2000, warnThresholdMs }: CheckerOptions) {
-    this.probe = probe;
-    this.timeoutMs = timeoutMs;
-    this.warnThresholdMs = warnThresholdMs;
+export class EligibilityDependencyChecker extends GenericDependencyChecker {
+  constructor(opts: CheckerOptions) {
+    super("eligibility", opts);
   }
+}
 
-  check(): Promise<DependencyStatus> {
-    return runProbe(this.name, this.probe, this.timeoutMs, this.warnThresholdMs);
+export class ActivationDependencyChecker extends GenericDependencyChecker {
+  constructor(opts: CheckerOptions) {
+    super("activation", opts);
   }
 }
 
@@ -126,6 +103,6 @@ export class HealthService {
 
   async isHealthy(): Promise<boolean> {
     const results = await this.checkAll();
-    return results.every((r) => r.status === "up");
+    return results.every((r) => r.status !== "down");
   }
 }

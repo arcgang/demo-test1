@@ -401,6 +401,26 @@ describe("HealthService.isHealthy", () => {
     expect(await service.isHealthy()).toBe(true);
   });
 
+  it("returns true when one checker is degraded and rest are up", async () => {
+    const degradedChecker: DependencyChecker = {
+      name: "payment",
+      check: async (): Promise<DependencyStatus> => ({
+        name: "payment",
+        status: "degraded",
+        latencyMs: 5,
+        checkedAt: new Date().toISOString(),
+      }),
+    };
+    const checkers: DependencyChecker[] = [
+      makeUpChecker("catalog"),
+      degradedChecker,
+      makeUpChecker("eligibility"),
+      makeUpChecker("activation"),
+    ];
+    const service = new HealthService(checkers);
+    expect(await service.isHealthy()).toBe(true);
+  });
+
   it("returns false when the last checker is down", async () => {
     const checkers: DependencyChecker[] = [
       makeUpChecker("catalog"),

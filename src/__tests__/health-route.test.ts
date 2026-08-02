@@ -300,6 +300,90 @@ describe("GET /api/health/dependencies – 503 when a dependency is down", () =>
   });
 });
 
+// ── 207 when any dependency is degraded ──────────────────────────────────────
+
+describe("GET /api/health – 207 when a dependency is degraded", () => {
+  function makeOverrideReq(
+    path: string,
+    overrides: Record<string, string>
+  ): NextRequest {
+    return new NextRequest(`http://localhost${path}`, {
+      headers: { "x-health-probe-override": JSON.stringify(overrides) },
+    });
+  }
+
+  it("returns HTTP 207 when catalog is overridden to degraded", async () => {
+    const req = makeOverrideReq("/api/health", { catalog: "degraded" });
+    const response = await getHealth(req);
+    expect(response.status).toBe(207);
+  });
+
+  it("aggregate body status is 'degraded' when one dep is degraded and rest are up", async () => {
+    const req = makeOverrideReq("/api/health", { payment: "degraded" });
+    const response = await getHealth(req);
+    const body = await response.json();
+    expect(body.status).toBe("degraded");
+  });
+
+  it("still returns all four dependency entries when one is degraded", async () => {
+    const req = makeOverrideReq("/api/health", { eligibility: "degraded" });
+    const response = await getHealth(req);
+    const body = await response.json();
+    expect(body.dependencies).toHaveLength(4);
+  });
+
+  it("the degraded dependency appears in the response with status 'degraded'", async () => {
+    const req = makeOverrideReq("/api/health", { activation: "degraded" });
+    const response = await getHealth(req);
+    const body = await response.json();
+    const dep = body.dependencies.find(
+      (d: { name: string }) => d.name === "activation"
+    );
+    expect(dep).toBeDefined();
+    expect(dep.status).toBe("degraded");
+  });
+});
+
+describe("GET /api/health/dependencies – 207 when a dependency is degraded", () => {
+  function makeOverrideReq(
+    path: string,
+    overrides: Record<string, string>
+  ): NextRequest {
+    return new NextRequest(`http://localhost${path}`, {
+      headers: { "x-health-probe-override": JSON.stringify(overrides) },
+    });
+  }
+
+  it("returns HTTP 207 when catalog is overridden to degraded", async () => {
+    const req = makeOverrideReq("/api/health/dependencies", {
+      catalog: "degraded",
+    });
+    const response = await getDependencies(req);
+    expect(response.status).toBe(207);
+  });
+
+  it("still returns all entries in the array body on 207", async () => {
+    const req = makeOverrideReq("/api/health/dependencies", {
+      payment: "degraded",
+    });
+    const response = await getDependencies(req);
+    const body = await response.json();
+    expect(Array.isArray(body)).toBe(true);
+    expect(body).toHaveLength(4);
+  });
+
+  it("the degraded dependency appears with status 'degraded'", async () => {
+    const req = makeOverrideReq("/api/health/dependencies", {
+      eligibility: "degraded",
+    });
+    const response = await getDependencies(req);
+    const body = await response.json();
+    const dep = body.find((d: { name: string }) => d.name === "eligibility");
+    expect(dep).toBeDefined();
+    expect(dep.status).toBe("degraded");
+  });
+});
+
 // ── Operator SLA: assessable within 60 s ─────────────────────────────────────
 
 describe("GET /api/health – latency SLA (assessable within 60 s)", () => {
