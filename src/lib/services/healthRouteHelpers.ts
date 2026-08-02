@@ -1,3 +1,4 @@
+import type { NextRequest } from "next/server";
 import {
   HealthService,
   CatalogDependencyChecker,
@@ -37,4 +38,29 @@ export function worstStatus(results: DependencyStatus[]): HealthStatus {
   if (results.some((r) => r.status === "down")) return "down";
   if (results.some((r) => r.status === "degraded")) return "degraded";
   return "up";
+}
+
+export async function runChecksWithOverrides(req: NextRequest): Promise<{
+  results: DependencyStatus[];
+  aggregateStatus: HealthStatus;
+  httpStatus: number;
+}> {
+  const service = buildDefaultService();
+  let results = await service.checkAll();
+
+  const overrideHeader = req.headers.get("x-health-probe-override");
+  if (overrideHeader) {
+    try {
+      const overrides = JSON.parse(overrideHeader) as Record<string, string>;
+      results = applyOverrides(results, overrides);
+    } catch {
+      // malformed header — ignore
+    }
+  }
+
+  const aggregateStatus = worstStatus(results);
+  const httpStatus =
+    aggregateStatus === "up" ? 200 : aggregateStatus === "degraded" ? 207 : 503;
+
+  return { results, aggregateStatus, httpStatus };
 }

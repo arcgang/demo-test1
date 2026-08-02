@@ -466,6 +466,99 @@ describe("CatalogDependencyChecker – degraded path", () => {
   });
 });
 
+// ── PaymentDependencyChecker – degraded path ─────────────────────────────────
+
+describe("PaymentDependencyChecker – degraded path", () => {
+  it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
+    const checker = new PaymentDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("degraded");
+  });
+
+  it("reports status: 'up' when latency is below warnThresholdMs", async () => {
+    const checker = new PaymentDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 10000,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("up");
+  });
+
+  it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
+    const checker = new PaymentDependencyChecker({
+      probe: failingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("down");
+  });
+});
+
+// ── EligibilityDependencyChecker – degraded path ──────────────────────────────
+
+describe("EligibilityDependencyChecker – degraded path", () => {
+  it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
+    const checker = new EligibilityDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("degraded");
+  });
+
+  it("reports status: 'up' when latency is below warnThresholdMs", async () => {
+    const checker = new EligibilityDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 10000,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("up");
+  });
+
+  it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
+    const checker = new EligibilityDependencyChecker({
+      probe: failingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("down");
+  });
+});
+
+// ── ActivationDependencyChecker – degraded path ───────────────────────────────
+
+describe("ActivationDependencyChecker – degraded path", () => {
+  it("reports status: 'degraded' when latency exceeds warnThresholdMs of 0", async () => {
+    const checker = new ActivationDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("degraded");
+  });
+
+  it("reports status: 'up' when latency is below warnThresholdMs", async () => {
+    const checker = new ActivationDependencyChecker({
+      probe: succeedingProbe,
+      warnThresholdMs: 10000,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("up");
+  });
+
+  it("warnThresholdMs does not affect the down path — down probe still reports 'down'", async () => {
+    const checker = new ActivationDependencyChecker({
+      probe: failingProbe,
+      warnThresholdMs: 0,
+    });
+    const result = await checker.check();
+    expect(result.status).toBe("down");
+  });
+});
+
 // ── Timer cleanup – no dangling timer on successful probe ─────────────────────
 
 describe("runProbe – timer cleanup", () => {
