@@ -82,17 +82,17 @@ export interface PSPAdapter {
   refundPayment(request: RefundPaymentRequest): Promise<RefundPaymentResult>;
 }
 
-let tokenCounter = 0;
-
 /** Deterministic mock for PSPAdapter — sandbox/simulated tokenized card responses. */
 export class MockPSPAdapter implements PSPAdapter {
+  private tokenCounter = 0;
+
   async tokenizeCard(request: TokenizeCardRequest): Promise<TokenizeCardResult> {
     if (request.pspSessionToken.includes("fail")) {
       throw new Error("PSP session token invalid or expired.");
     }
-    tokenCounter += 1;
+    this.tokenCounter += 1;
     return {
-      tokenReference: `tok_mock_${tokenCounter}_${request.lastFour}`,
+      tokenReference: `tok_mock_${this.tokenCounter}_${request.lastFour}`,
       lastFour: request.lastFour,
       tokenizedAt: new Date().toISOString(),
     };

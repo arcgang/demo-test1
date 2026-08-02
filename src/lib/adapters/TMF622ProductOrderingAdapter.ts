@@ -45,22 +45,21 @@ export interface OrderingAdapter {
   getOrderStatus(externalOrderReference: string): Promise<OrderStatusResult>;
 
   /** Push a state update for an order (e.g. CANCELLED, COMPLETED). */
-  updateOrderState(externalOrderReference: string, newState: string): Promise<void>;
+  updateOrderState(externalOrderReference: string, newState: OrderStatusResult["status"]): Promise<void>;
 }
-
-let refCounter = 0;
 
 /** Deterministic mock for TMF622 ProductOrderingAdapter. */
 export class MockTMF622ProductOrderingAdapter implements OrderingAdapter {
-  private readonly overrides = new Map<string, string>();
+  private refCounter = 0;
+  private readonly overrides = new Map<string, OrderStatusResult["status"]>();
 
   async submitOrder(request: OrderRequest): Promise<OrderSubmissionResult> {
     const submittedAt = new Date().toISOString();
     if (request.cartId.includes("fail")) {
       return { externalOrderReference: "", status: "FAILED", submittedAt, failureReason: "Order rejected by downstream system." };
     }
-    refCounter += 1;
-    const externalOrderReference = `ext_order_${refCounter}_${request.cartId}`;
+    this.refCounter += 1;
+    const externalOrderReference = `ext_order_${this.refCounter}_${request.cartId}`;
     return { externalOrderReference, status: "RECEIVED", submittedAt };
   }
 
@@ -68,7 +67,7 @@ export class MockTMF622ProductOrderingAdapter implements OrderingAdapter {
     const lastUpdatedAt = new Date().toISOString();
     const override = this.overrides.get(externalOrderReference);
     if (override) {
-      return { externalOrderReference, status: override as OrderStatusResult["status"], lastUpdatedAt };
+      return { externalOrderReference, status: override, lastUpdatedAt };
     }
     if (externalOrderReference.includes("fail")) {
       return { externalOrderReference, status: "FAILED", lastUpdatedAt, failureReason: "Order processing failed." };
@@ -79,7 +78,7 @@ export class MockTMF622ProductOrderingAdapter implements OrderingAdapter {
     return { externalOrderReference, status: "COMPLETED", lastUpdatedAt };
   }
 
-  async updateOrderState(externalOrderReference: string, newState: string): Promise<void> {
+  async updateOrderState(externalOrderReference: string, newState: OrderStatusResult["status"]): Promise<void> {
     if (externalOrderReference.includes("fail")) {
       throw new Error(`Cannot update immutable failed order: ${externalOrderReference}`);
     }

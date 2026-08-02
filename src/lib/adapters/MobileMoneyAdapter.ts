@@ -57,10 +57,9 @@ interface InternalState {
   providerReference?: string;
 }
 
-let mmRefCounter = 0;
-
 /** Deterministic mock for MobileMoneyAdapter — simulates M-Pesa-like redirect/callback flow. */
 export class MockMobileMoneyAdapter implements MobileMoneyAdapter {
+  private mmRefCounter = 0;
   private readonly state = new Map<string, InternalState>();
 
   async initiateWalletPayment(request: InitiateWalletPaymentRequest): Promise<InitiateWalletPaymentResult> {
@@ -74,8 +73,8 @@ export class MockMobileMoneyAdapter implements MobileMoneyAdapter {
         failureReason: "Wallet reference invalid or unreachable.",
       };
     }
-    mmRefCounter += 1;
-    const providerReference = `mpesa_pending_${mmRefCounter}_${request.paymentAttemptId}`;
+    this.mmRefCounter += 1;
+    const providerReference = `mpesa_pending_${this.mmRefCounter}_${request.paymentAttemptId}`;
     this.state.set(request.paymentAttemptId, {
       status: "PENDING_PROVIDER_CONFIRMATION",
       providerReference,
@@ -91,8 +90,8 @@ export class MockMobileMoneyAdapter implements MobileMoneyAdapter {
 
   async handlePaymentCallback(callback: PaymentCallbackPayload): Promise<void> {
     const existing = this.state.get(callback.paymentAttemptId);
-    // Idempotent: if already in a terminal SUCCESS state, ignore duplicate.
-    if (existing?.status === "SUCCESS" && callback.status === "SUCCESS") return;
+    // Idempotent: ignore any callback that arrives after the record is already in a terminal state.
+    if (existing && (existing.status === "SUCCESS" || existing.status === "FAILED")) return;
 
     let mappedStatus: WalletPaymentStatusResult["status"];
     if (callback.status === "SUCCESS") mappedStatus = "SUCCESS";

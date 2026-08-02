@@ -58,11 +58,10 @@ interface InternalActivationRecord {
   esimReference?: string;
 }
 
-let activationRefCounter = 0;
-let esimRefCounter = 0;
-
 /** Deterministic mock for ActivationStatusAdapter — async milestone simulation. */
 export class MockActivationStatusAdapter implements ActivationStatusAdapter {
+  private activationRefCounter = 0;
+  private esimRefCounter = 0;
   private readonly records = new Map<string, InternalActivationRecord>();
 
   async requestActivation(input: RequestActivationInput): Promise<RequestActivationResult> {
@@ -98,8 +97,8 @@ export class MockActivationStatusAdapter implements ActivationStatusAdapter {
       };
     }
 
-    activationRefCounter += 1;
-    const activationReference = `act_ref_${activationRefCounter}_${input.orderId}`;
+    this.activationRefCounter += 1;
+    const activationReference = `act_ref_${this.activationRefCounter}_${input.orderId}`;
     const milestones: ActivationMilestone[] = [
       { milestone: "PAYMENT_CONFIRMED", status: "SUCCESS", timestamp: requestedAt },
       { milestone: "VERIFICATION_COMPLETED", status: "SUCCESS", timestamp: requestedAt },
@@ -143,8 +142,8 @@ export class MockActivationStatusAdapter implements ActivationStatusAdapter {
       };
     }
 
-    esimRefCounter += 1;
-    const esimReference = `esim_ref_${esimRefCounter}_${orderId}`;
+    this.esimRefCounter += 1;
+    const esimReference = `esim_ref_${this.esimRefCounter}_${orderId}`;
     record.esimReference = esimReference;
     record.milestones.push({ milestone: "ESIM_ISSUED", status: "SUCCESS", timestamp: issuedAt });
 
