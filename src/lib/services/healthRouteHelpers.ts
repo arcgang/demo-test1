@@ -56,6 +56,9 @@ export async function runChecksWithOverrides(req: NextRequest): Promise<{
   }
 
   const aggregateStatus = worstStatus(results);
+  // Endpoint contract: HTTP 200 = all dependencies up; HTTP 503 = any dependency
+  // degraded or down. Both non-up states signal that the service is not fully
+  // operational and operators should investigate before routing traffic.
   const httpStatus = aggregateStatus === "up" ? 200 : 503;
 
   return { results, aggregateStatus, httpStatus };

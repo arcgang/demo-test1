@@ -404,7 +404,7 @@ describe("HealthService.isHealthy", () => {
     expect(await service.isHealthy()).toBe(true);
   });
 
-  it("returns true when one checker is degraded and rest are up", async () => {
+  it("returns false when one checker is degraded and rest are up", async () => {
     const degradedChecker: DependencyChecker = {
       name: "payment",
       check: async (): Promise<DependencyStatus> => ({
@@ -421,7 +421,7 @@ describe("HealthService.isHealthy", () => {
       makeUpChecker("activation"),
     ];
     const service = new HealthService(checkers);
-    expect(await service.isHealthy()).toBe(true);
+    expect(await service.isHealthy()).toBe(false);
   });
 
   it("returns false when the last checker is down", async () => {

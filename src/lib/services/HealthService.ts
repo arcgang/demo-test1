@@ -79,6 +79,6 @@ export class HealthService {
 
   async isHealthy(): Promise<boolean> {
     const results = await this.checkAll();
-    return results.every((r) => r.status !== "down");
+    return results.every((r) => r.status === "up");
   }
 }
