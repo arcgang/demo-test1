@@ -90,8 +90,12 @@ export class MockMobileMoneyAdapter implements MobileMoneyAdapter {
 
   async handlePaymentCallback(callback: PaymentCallbackPayload): Promise<void> {
     const existing = this.state.get(callback.paymentAttemptId);
-    // Idempotent: ignore any callback that arrives after the record is already in a terminal state.
-    if (existing && (existing.status === "SUCCESS" || existing.status === "FAILED")) return;
+    // Reject any callback that arrives after the record is already in a terminal state.
+    if (existing && (existing.status === "SUCCESS" || existing.status === "FAILED")) {
+      throw new Error(
+        `Cannot process callback: payment ${callback.paymentAttemptId} is already in terminal state ${existing.status}`
+      );
+    }
 
     let mappedStatus: WalletPaymentStatusResult["status"];
     if (callback.status === "SUCCESS") mappedStatus = "SUCCESS";

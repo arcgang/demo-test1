@@ -121,14 +121,29 @@ describe("MockMobileMoneyAdapter.handlePaymentCallback", () => {
     expect(status.status).toBe("FAILED");
   });
 
-  it("idempotent: processing the same SUCCESS callback twice does not duplicate state", async () => {
+  it("terminal-state guard (SUCCESS): second callback on a SUCCESS attempt rejects with terminal-state error", async () => {
     const adapter = new MockMobileMoneyAdapter();
     const cb = makeCallback({ paymentAttemptId: "pay_idem_03" });
     await adapter.handlePaymentCallback(cb);
-    await adapter.handlePaymentCallback(cb);
 
-    const status = await adapter.queryPaymentStatus("pay_idem_03");
-    expect(status.status).toBe("SUCCESS");
+    await expect(adapter.handlePaymentCallback(cb)).rejects.toThrow(
+      "Cannot process callback: payment pay_idem_03 is already in terminal state SUCCESS"
+    );
+  });
+
+  it("terminal-state guard (FAILED): callback on a FAILED attempt rejects with terminal-state error", async () => {
+    const adapter = new MockMobileMoneyAdapter();
+    const failedCb = makeCallback({ paymentAttemptId: "pay_idem_fail_04", status: "FAILED" });
+    await adapter.handlePaymentCallback(failedCb);
+
+    await expect(
+      adapter.handlePaymentCallback(makeCallback({ paymentAttemptId: "pay_idem_fail_04", status: "SUCCESS" }))
+    ).rejects.toThrow(
+      "Cannot process callback: payment pay_idem_fail_04 is already in terminal state FAILED"
+    );
+
+    const status = await adapter.queryPaymentStatus("pay_idem_fail_04");
+    expect(status.status).toBe("FAILED");
   });
 
   it("verifies providerReference in the callback before accepting", async () => {
